@@ -4,7 +4,7 @@ dotenv.config();
 
 export const config = {
   port: Number(process.env.PORT || 3000),
-  databaseUrl: process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/saroir_byoa",
+  databaseUrl: process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:5432/chessmoves_byoa",
   minimaxDepth: Number(process.env.MINIMAX_DEPTH || 2),
   ollamaBaseUrl: process.env.OLLAMA_BASE_URL || "http://localhost:11434",
   ollamaChatModel: process.env.OLLAMA_CHAT_MODEL || "qwen2.5:3b",

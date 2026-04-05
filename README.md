@@ -1,6 +1,6 @@
-# Saroir BYOA Chess POC
+# BYOA Chess POC
 
-Standalone BYOA chess proof of concept for Saroir. The app demonstrates:
+Standalone BYOA chess proof of concept. The app demonstrates:
 
 - deterministic chess play via minimax,
 - retrieval-backed agent answers via Ollama,
@@ -69,4 +69,4 @@ Exactly five JSON API endpoints are exposed:
 - Only the move endpoint mutates game state.
 - Agent responses are logged in `agent_runs` and `audit_events`.
 - If Ollama is unavailable, agent answers degrade safely instead of mutating state or failing the game flow.
-- The live Saroir `/byoa` page is not in this repo. QC findings and recommendations are captured in [`docs/byoa-qc.md`](/home/anurag/dev/projects/saroir/docs/byoa-qc.md).
+- Platform-specific `/byoa` page assets are not in this repo. QC findings and recommendations are captured in `docs/byoa-qc.md`.

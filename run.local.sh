@@ -33,19 +33,19 @@ PORT="${PORT:-3000}"
 OLLAMA_BASE_URL="${OLLAMA_BASE_URL:-http://localhost:11434}"
 OLLAMA_CHAT_MODEL="${OLLAMA_CHAT_MODEL:-qwen2.5:3b}"
 OLLAMA_EMBED_MODEL="${OLLAMA_EMBED_MODEL:-nomic-embed-text}"
-APP_DATABASE_URL="postgres://postgres:postgres@postgres:5432/saroir_byoa"
+APP_DATABASE_URL="postgres://postgres:postgres@postgres:5432/chessmoves_byoa"
 APP_OLLAMA_BASE_URL="http://ollama:11434"
 
 log "Starting postgres and ollama containers"
 docker compose up -d postgres ollama
 
 log "Waiting for Postgres"
-until docker exec saroir-postgres-1 pg_isready -U postgres >/dev/null 2>&1; do
+until docker exec chessmoves-postgres-1 pg_isready -U postgres >/dev/null 2>&1; do
   sleep 2
 done
 
 log "Ensuring Postgres password matches app defaults"
-docker exec -u postgres saroir-postgres-1 psql -d postgres -c "ALTER USER postgres WITH PASSWORD 'postgres';" >/dev/null
+docker exec -u postgres chessmoves-postgres-1 psql -d postgres -c "ALTER USER postgres WITH PASSWORD 'postgres';" >/dev/null
 
 log "Waiting for Ollama"
 until curl -fsS "$OLLAMA_BASE_URL/api/tags" >/dev/null 2>&1; do
@@ -61,14 +61,14 @@ docker compose exec -T ollama ollama pull "$OLLAMA_EMBED_MODEL"
 log "Ollama models are ready. Later runs should be much faster."
 
 log "Initializing database schema"
-docker exec -i saroir-postgres-1 psql -U postgres -d saroir_byoa -f /dev/stdin < db/schema.sql >/dev/null
+docker exec -i chessmoves-postgres-1 psql -U postgres -d chessmoves_byoa -f /dev/stdin < db/schema.sql >/dev/null
 
 log "Stopping any previous app container"
-docker rm -f saroir-app >/dev/null 2>&1 || true
+docker rm -f chessmoves-app >/dev/null 2>&1 || true
 
 log "Starting app container on http://127.0.0.1:$PORT"
-exec docker run --rm --name saroir-app \
-  --network saroir_default \
+exec docker run --rm --name chessmoves-app \
+  --network chessmoves_default \
   -p "$PORT:3000" \
   --env-file .env \
   -e PORT=3000 \

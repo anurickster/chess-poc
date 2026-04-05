@@ -17,5 +17,5 @@ const agentService = new AgentService({ repository, retrievalService, ollamaClie
 const app = createApp({ gameService, agentService });
 
 app.listen(config.port, () => {
-  console.log(`Saroir BYOA Chess POC listening on http://localhost:${config.port}`);
+  console.log(`BYOA Chess POC listening on http://localhost:${config.port}`);
 });

@@ -2,7 +2,7 @@ services:
   postgres:
     image: pgvector/pgvector:pg16
     environment:
-      POSTGRES_DB: saroir_byoa
+      POSTGRES_DB: chessmoves_byoa
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
     ports:

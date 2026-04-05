@@ -114,7 +114,7 @@ async function fetchJson(url, { headers = {}, timeoutMs = config.internetAnalysi
   try {
     const response = await fetch(url, {
       headers: {
-        "User-Agent": "saroir-byoa-chess-poc/0.1",
+        "User-Agent": "chessmoves-byoa-chess-poc/0.1",
         ...headers
       },
       signal: controller.signal

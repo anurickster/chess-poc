@@ -4,7 +4,7 @@ Date checked: 2026-03-29 UTC
 
 ## Current page state
 
-The live `https://saroir.com/byoa` page is a concept and positioning page for three agents:
+The live `/byoa` page referenced by this document is a concept and positioning page for three agents:
 
 - contributor-scoped personal agent,
 - project-scoped memory agent,
@@ -25,9 +25,9 @@ The standalone chess POC does not demonstrate these platform-wide claims:
 
 - cross-domain knowledge graph behavior,
 - project cohort briefings,
-- contributor identity and domain separation inside Saroir,
+- contributor identity and domain separation inside the platform,
 - moderator workflows,
-- public/private platform data boundaries across real Saroir projects.
+- public/private platform data boundaries across real projects.
 
 ## QC findings
 
