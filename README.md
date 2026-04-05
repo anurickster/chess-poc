@@ -45,6 +45,34 @@ npm run dev
 
 The web UI is served from `http://localhost:3000/`.
 
+## One-Command Startup
+
+Use the single startup script:
+
+```bash
+bash ./run.sh
+```
+
+What it does:
+
+- creates `.env` from `.env.example` if needed,
+- starts or reuses Docker containers for Postgres and Ollama,
+- creates the configured database if it is missing,
+- applies the schema without requiring host `psql`,
+- pulls missing Ollama models,
+- starts the app in a Dockerized Node runtime.
+
+Windows note:
+
+- run the script from Git Bash or WSL,
+- Docker Desktop must be running.
+
+Setup-only mode:
+
+```bash
+SETUP_ONLY=1 bash ./run.sh
+```
+
 ## Docker Runtime Note
 
 If the app itself runs inside Docker, do not use `http://localhost:11434` for `OLLAMA_BASE_URL`.
