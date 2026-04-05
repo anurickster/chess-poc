@@ -231,6 +231,14 @@ textarea,
   white-space: pre-wrap;
 }
 
+#agent-answer,
+#audit {
+  max-height: 260px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+
 .history {
   margin: 0;
   padding-left: 20px;
