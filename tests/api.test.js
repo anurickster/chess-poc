@@ -6,6 +6,7 @@ import { MemoryRepository } from "../src/repositories/memory-repository.js";
 import { GameService } from "../src/services/game-service.js";
 import { RetrievalService } from "../src/services/retrieval-service.js";
 import { AgentService } from "../src/services/agent-service.js";
+import { OllamaClient } from "../src/services/ollama-client.js";
 
 class FakeOllamaClient {
   async generate({ prompt }) {
@@ -17,7 +18,7 @@ class FakeOllamaClient {
   }
 }
 
-async function buildTestApp() {
+async function buildTestApp({ ollamaClient = new FakeOllamaClient() } = {}) {
   const repository = new MemoryRepository();
   const document = await repository.upsertDocument({
     slug: "test-doc",
@@ -33,7 +34,6 @@ async function buildTestApp() {
     }
   ]);
 
-  const ollamaClient = new FakeOllamaClient();
   const gameService = new GameService({ repository });
   const retrievalService = new RetrievalService({ repository, ollamaClient });
   const agentService = new AgentService({ repository, retrievalService, ollamaClient });
@@ -93,4 +93,52 @@ test("illegal moves are rejected", async () => {
 
   assert.equal(illegalMove.status, 400);
   assert.match(illegalMove.body.error, /Invalid move/);
+});
+
+test("agent query returns a deterministic fallback when generation fails", async () => {
+  class FailingOllamaClient extends FakeOllamaClient {
+    async generate() {
+      throw new Error("Simulated Ollama outage");
+    }
+  }
+
+  const { app } = await buildTestApp({ ollamaClient: new FailingOllamaClient() });
+  const sessionResponse = await request(app).post("/api/sessions").send({});
+  const gameResponse = await request(app).post("/api/games").send({ sessionId: sessionResponse.body.sessionId, playerColor: "white" });
+
+  const queryResponse = await request(app)
+    .post(`/api/games/${gameResponse.body.gameId}/agent/query`)
+    .send({ sessionId: sessionResponse.body.sessionId, question: "I want to win" });
+
+  assert.equal(queryResponse.status, 200);
+  assert.match(queryResponse.body.answer, /language model is unavailable/i);
+  assert.match(queryResponse.body.answer, /\[1\]/);
+});
+
+test("ollama client retries a transient generate failure once", async () => {
+  const originalFetch = global.fetch;
+  let calls = 0;
+
+  global.fetch = async () => {
+    calls += 1;
+    if (calls === 1) {
+      throw new TypeError("fetch failed");
+    }
+
+    return {
+      ok: true,
+      json: async () => ({
+        response: "Recovered answer"
+      })
+    };
+  };
+
+  try {
+    const ollamaClient = new OllamaClient();
+    const answer = await ollamaClient.generate({ system: "test system", prompt: "test prompt" });
+    assert.equal(answer, "Recovered answer");
+    assert.equal(calls, 2);
+  } finally {
+    global.fetch = originalFetch;
+  }
 });

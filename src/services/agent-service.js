@@ -8,6 +8,28 @@ export class AgentService {
     this.internetChessService = internetChessService;
   }
 
+  buildUnavailableAnswer({ gameSnapshot, moveAnalysis }) {
+    const latestMove = gameSnapshot.lastMove;
+    const latestMoveLine = latestMove
+      ? `The latest move was ${latestMove.actor} ${latestMove.san} (${latestMove.from}-${latestMove.to}) [1].`
+      : "No moves have been played yet [1].";
+    const internetLine = moveAnalysis?.cloudEval?.effectiveness
+      ? `Internet analysis rated that move ${moveAnalysis.cloudEval.effectiveness.label}${
+          moveAnalysis.cloudEval.effectiveness.score !== null
+            ? ` (${moveAnalysis.cloudEval.effectiveness.score}/100)`
+            : ""
+        } and preferred ${moveAnalysis.cloudEval.bestMoveUci} instead [2].`
+      : "Only the current board state is available right now [1].";
+
+    return [
+      "The language model is unavailable right now, so here is a direct summary from the stored chess data.",
+      `It is ${gameSnapshot.turn} to move and the game status is ${gameSnapshot.status} [1].`,
+      latestMoveLine,
+      internetLine,
+      "Ask again in a moment if you want a fuller explanation."
+    ].join(" ");
+  }
+
   async answerQuestion({ sessionId, gameId, question, gameSnapshot }) {
     const { retrievalMode, citations, contextText } = await this.retrievalService.retrieve({
       question,
@@ -28,6 +50,7 @@ export class AgentService {
       "When internet-backed move analysis is available, explain whether the latest human move matches strong practice and how effective it was.",
       "Only claim a top-player or master comparison when the supplied context explicitly says master comparison is available.",
       "If the context says master comparison is unavailable, state that plainly and limit the analysis to the available engine or retrieval evidence.",
+      "Keep the answer concise and complete in at most four sentences.",
       "Answer using only the supplied context and cite sources by bracket number."
     ].join(" ");
 
@@ -42,8 +65,9 @@ export class AgentService {
 
     try {
       answer = await this.ollamaClient.generate({ system, prompt });
-    } catch {
-      answer = "The agent is temporarily unavailable. Current game state and stored citations were logged, but no model answer could be generated.";
+    } catch (error) {
+      console.error("Agent generation failed:", error);
+      answer = this.buildUnavailableAnswer({ gameSnapshot, moveAnalysis });
     }
 
     const agentRun = await this.repository.createAgentRun({
