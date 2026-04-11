@@ -45,6 +45,58 @@ npm run dev
 
 The web UI is served from `http://localhost:3000/`.
 
+## Deploy On Vercel
+
+This repo can deploy on Vercel as:
+
+- static frontend from `public/`,
+- serverless API from `api/[...path].js`.
+
+Important constraints:
+
+- Vercel cannot run your local Docker services.
+- `DATABASE_URL` must point to a hosted Postgres database.
+- If you want retrieval embeddings and full agent answers, `OLLAMA_BASE_URL` must point to an externally reachable Ollama-compatible endpoint. `http://localhost:11434` will not work on Vercel.
+- If Ollama is unreachable, the app still serves the game and returns the built-in fallback answer path for agent queries.
+
+Suggested deploy flow:
+
+```bash
+npx vercel login
+npx vercel link
+```
+
+Add the production env vars in Vercel:
+
+```bash
+npx vercel env add DATABASE_URL production
+npx vercel env add MINIMAX_DEPTH production
+npx vercel env add OLLAMA_BASE_URL production
+npx vercel env add OLLAMA_CHAT_MODEL production
+npx vercel env add OLLAMA_EMBED_MODEL production
+npx vercel env add OLLAMA_TIMEOUT_MS production
+npx vercel env add EMBEDDING_DIM production
+npx vercel env add LICHESS_BASE_URL production
+npx vercel env add LICHESS_MASTERS_URL production
+npx vercel env add LICHESS_API_TOKEN production
+npx vercel env add INTERNET_ANALYSIS_TIMEOUT_MS production
+```
+
+Deploy:
+
+```bash
+npx vercel --prod
+```
+
+Before the first production deploy, initialize your hosted database with:
+
+```bash
+npm run db:init
+npm run seed:docs
+```
+
+Use a Postgres provider that supports the `vector` extension required by `db/schema.sql`.
+
 ## One-Command Startup
 
 Use the single startup script:
