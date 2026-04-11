@@ -28,6 +28,12 @@ function normalizeGenerateResponse(response) {
 }
 
 async function postJson(path, body, timeoutMs = config.ollamaTimeoutMs) {
+  if (!config.ollamaEnabled) {
+    const error = new Error("Ollama is disabled for this environment.");
+    error.code = "OLLAMA_DISABLED";
+    throw error;
+  }
+
   const controller = new AbortController();
   let timedOut = false;
   const timeout = setTimeout(() => {
@@ -81,13 +87,19 @@ export class OllamaClient {
         throw error;
       }
 
-      const retryTimeoutMs = Math.max(config.ollamaTimeoutMs * 2, 120000);
+      const retryTimeoutMs = config.isVercel
+        ? Math.max(Math.floor(config.ollamaTimeoutMs / 2), 3000)
+        : Math.max(config.ollamaTimeoutMs * 2, 120000);
       const response = await postJson("/api/generate", body, retryTimeoutMs);
       return normalizeGenerateResponse(response);
     }
   }
 
   async embed(text) {
+    if (!config.ollamaEnabled) {
+      return null;
+    }
+
     const response = await postJson("/api/embeddings", {
       model: config.ollamaEmbedModel,
       prompt: text

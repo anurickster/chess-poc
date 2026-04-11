@@ -58,6 +58,7 @@ Important constraints:
 - `DATABASE_URL` must point to a hosted Postgres database.
 - If you want retrieval embeddings and full agent answers, `OLLAMA_BASE_URL` must point to an externally reachable Ollama-compatible endpoint. `http://localhost:11434` will not work on Vercel.
 - If Ollama is unreachable, the app still serves the game and returns the built-in fallback answer path for agent queries.
+- For a first deploy without external Ollama, set `OLLAMA_ENABLED=false` in Vercel.
 
 Suggested deploy flow:
 
@@ -71,6 +72,7 @@ Add the production env vars in Vercel:
 ```bash
 npx vercel env add DATABASE_URL production
 npx vercel env add MINIMAX_DEPTH production
+npx vercel env add OLLAMA_ENABLED production
 npx vercel env add OLLAMA_BASE_URL production
 npx vercel env add OLLAMA_CHAT_MODEL production
 npx vercel env add OLLAMA_EMBED_MODEL production
@@ -96,6 +98,7 @@ npm run seed:docs
 ```
 
 Use a Postgres provider that supports the `vector` extension required by `db/schema.sql`.
+The `db:init` script now runs through Node, so you do not need `psql` installed locally.
 
 ## One-Command Startup
 

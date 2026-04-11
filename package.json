@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "db:init": "psql \"$DATABASE_URL\" -f db/schema.sql",
+    "db:init": "node src/scripts/init-db.js",
     "seed:docs": "node src/scripts/seed-docs.js",
     "test": "node --test"
   },

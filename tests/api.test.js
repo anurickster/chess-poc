@@ -7,6 +7,7 @@ import { GameService } from "../src/services/game-service.js";
 import { RetrievalService } from "../src/services/retrieval-service.js";
 import { AgentService } from "../src/services/agent-service.js";
 import { OllamaClient } from "../src/services/ollama-client.js";
+import { config } from "../src/config.js";
 
 class FakeOllamaClient {
   async generate({ prompt }) {
@@ -117,8 +118,14 @@ test("agent query returns a deterministic fallback when generation fails", async
 
 test("ollama client retries a transient generate failure once", async () => {
   const originalFetch = global.fetch;
+  const originalIsVercel = config.isVercel;
+  const originalOllamaEnabled = config.ollamaEnabled;
+  const originalOllamaTimeoutMs = config.ollamaTimeoutMs;
   let calls = 0;
 
+  config.isVercel = false;
+  config.ollamaEnabled = true;
+  config.ollamaTimeoutMs = 50;
   global.fetch = async () => {
     calls += 1;
     if (calls === 1) {
@@ -139,6 +146,22 @@ test("ollama client retries a transient generate failure once", async () => {
     assert.equal(answer, "Recovered answer");
     assert.equal(calls, 2);
   } finally {
+    config.isVercel = originalIsVercel;
+    config.ollamaEnabled = originalOllamaEnabled;
+    config.ollamaTimeoutMs = originalOllamaTimeoutMs;
     global.fetch = originalFetch;
+  }
+});
+
+test("ollama client returns null embeddings when disabled", async () => {
+  const originalOllamaEnabled = config.ollamaEnabled;
+  config.ollamaEnabled = false;
+
+  try {
+    const ollamaClient = new OllamaClient();
+    const embedding = await ollamaClient.embed("center control");
+    assert.equal(embedding, null);
+  } finally {
+    config.ollamaEnabled = originalOllamaEnabled;
   }
 });
